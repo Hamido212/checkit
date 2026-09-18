@@ -13,11 +13,11 @@ class DepartureRepository(
     fun refresh(stop: Stop): DepartureSnapshot {
         return try {
             val fresh = apiClient.getDepartures(stop)
-            save(fresh)
+            if (selectedStop().id == stop.id) save(fresh)
             fresh
         } catch (error: Exception) {
             val cached = load()?.takeIf { it.station.id == stop.id }?.copy(stale = true) ?: throw error
-            save(cached)
+            if (selectedStop().id == stop.id) save(cached)
             cached
         }
     }
@@ -87,9 +87,9 @@ class DepartureRepository(
                         id = item.getString("id"),
                         line = item.getString("line"),
                         destination = item.getString("destination"),
-                        platform = item.optString("platform").ifBlank { null },
-                        scheduled = item.optString("scheduled").ifBlank { null },
-                        realtime = item.optString("realtime").ifBlank { null },
+                        platform = item.optString("platform").takeUnless { it.isBlank() || it == "null" },
+                        scheduled = item.optString("scheduled").takeUnless { it.isBlank() || it == "null" },
+                        realtime = item.optString("realtime").takeUnless { it.isBlank() || it == "null" },
                         delayMinutes = item.optInt("delayMinutes"),
                         realtimeData = item.optBoolean("realtimeData"),
                         cancelled = item.optBoolean("cancelled"),

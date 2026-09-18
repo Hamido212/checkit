@@ -23,7 +23,7 @@ Windows ist ein eigenständiges Desktop-Fenster, keine Erweiterung des Windows-1
 
 ## Aktualisierung
 
-Web und Windows: 60 Sekunden. API-Cache: 45 Sekunden. Android: auf Tipp auf ↻ und ungefähr alle 15 Minuten im Hintergrund. Android kann diesen Rhythmus verzögern. Restzeiten stehen im Vordergrund: Web/App/Windows zeigen Minuten, das Android-Widget einen selbstständig laufenden MIN:SEK-Countdown. Zusätzliche Uhrzeiten sind Europe/Berlin. Ein negativer Widget-Countdown bedeutet, dass die Abfahrt laut letztem Stand bereits vorbei ist; ↻ lädt neue Daten. Datenstand und veraltete Daten werden sichtbar gekennzeichnet. Keine Garantie der Echtzeitabdeckung oder Abfahrtsdaten.
+Web und Windows: 60 Sekunden. API-Cache: 45 Sekunden. Android: Live-Modus mit dauerhafter Benachrichtigung lädt bei eingeschaltetem Bildschirm jede Minute neue Daten; Widget-Minuten und abgelaufene Abfahrten werden alle zehn Sekunden aktualisiert. Alle Widgets teilen denselben Datenstand. Ohne Live-Modus bleibt der ungefähre 15-Minuten-Hintergrundrhythmus von Android. Hersteller-Energiesparfunktionen können den Dienst stoppen (bei Xiaomi gegebenenfalls Autostart und Akku → Keine Beschränkungen erlauben). Restzeiten werden nie negativ. Ergänzende Uhrzeiten sind Europe/Berlin. Datenstand und veraltete Daten werden sichtbar gekennzeichnet. Keine Garantie der Echtzeitabdeckung oder Abfahrtsdaten.
 
 ## Lokal starten
 

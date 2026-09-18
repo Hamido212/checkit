@@ -1,3 +1,15 @@
+# Checkit 0.2.1
+
+- Android-Live-Modus: neue Abfahrten jede Minute bei eingeschaltetem Bildschirm, mit abschaltbarer dauerhafter Benachrichtigung.
+- Minutenanzeige ohne negative Countdown-Werte; abgefahrene Verbindungen werden automatisch entfernt.
+- Gemeinsame Aktualisierung aller Widgets und automatische Aktualisierung der geöffneten App.
+- Einheitliches weißes Pfeil-Logo für Favicon, Web-App, Android und Windows.
+- Weiße, lesbare Schrift in der dunklen Android-App.
+
+APK über die bestehende Version installieren und Checkit einmal öffnen. Live-Modus ist standardmäßig aktiv. Bei Xiaomi gegebenenfalls Autostart und Akku → Keine Beschränkungen für Checkit erlauben. Android kann den Dienst durch Energiesparregeln oder manuelles Beenden anhalten.
+
+Windows 0.2.1 enthält das neue weiße App-Symbol.
+
 # Checkit 0.2.0
 
 Erste öffentliche Bremen-Version.

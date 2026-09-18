@@ -67,10 +67,10 @@ class WidgetLayoutTest {
                 for(attempt in 0..25) {
                     Thread.sleep(200)
                     instrumentation.runOnMainSync { texts=collect(view) }
-                    if(texts.any { it is android.widget.Chronometer }) break
+                    if(texts.any { it.text.toString().matches(Regex("[0-9]+ min")) }) break
                 }
                 instrumentation.runOnMainSync {
-                    val times=texts.filterIsInstance<android.widget.Chronometer>()
+                    val times=texts.filter { it.text.toString().matches(Regex("[0-9]+ min")) }
                     assertTrue("No times at ${width}x${height}: ${texts.map{it.text}}", times.isNotEmpty())
                     assertTrue("Status missing", texts.any { it.text.contains("Stand") })
                     val location=IntArray(2);view.getLocationOnScreen(location)
@@ -79,7 +79,7 @@ class WidgetLayoutTest {
                         val bottomInset = (22 * context.resources.displayMetrics.density).toInt()
                         assertTrue("Time clipped by inner frame",pos[1]+t.height<=location[1]+view.height-bottomInset)
                         assertTrue("Time clipped horizontally",pos[0]+t.width<=location[0]+view.width)
-                        assertTrue("Countdown must run backwards", t.isCountDown)
+                        assertFalse("Negative countdown", t.text.startsWith("-"))
                         for(destination in texts.filter { label -> live.departures.any { it.destination == label.text.toString() } }) {
                             val target = IntArray(2);destination.getLocationOnScreen(target)
                             if(target[1] < pos[1]+t.height && target[1]+destination.height > pos[1])
@@ -91,11 +91,47 @@ class WidgetLayoutTest {
                     File(context.getExternalFilesDir(null),"widget-${width}x${height}.png").outputStream().use {bitmap.compress(Bitmap.CompressFormat.PNG,100,it)}
                     android.util.Log.i("CheckitTest","${width}x${height}: ${times.size} aligned departure rows")
                 }
-                var before = ""
-                instrumentation.runOnMainSync { before = collect(view).filterIsInstance<android.widget.Chronometer>().first().text.toString() }
-                Thread.sleep(1200)
-                instrumentation.runOnMainSync { assertNotEquals("Countdown froze between network updates", before, collect(view).filterIsInstance<android.widget.Chronometer>().first().text.toString()) }
+
             }
+            val secondId = host.allocateAppWidgetId()
+            assertTrue(manager.bindAppWidgetIdIfAllowed(secondId, ComponentName(context, BremenDepartureWidgetReceiver::class.java)))
+            val views = mutableListOf<android.appwidget.AppWidgetHostView>()
+            instrumentation.runOnMainSync {
+                activity.root.removeAllViews()
+                for ((index, widgetId) in listOf(id, secondId).withIndex()) {
+                    val view = host.createView(context, widgetId, manager.getAppWidgetInfo(widgetId))
+                    val density = context.resources.displayMetrics.density
+                    activity.root.addView(view, FrameLayout.LayoutParams((300*density).toInt(), (150*density).toInt()).apply { topMargin = (index*170*density).toInt() })
+                    manager.updateAppWidgetOptions(widgetId, manager.getAppWidgetOptions(id))
+                    views.add(view)
+                }
+            }
+            val prefs = context.getSharedPreferences("departure-cache", android.content.Context.MODE_PRIVATE)
+            val original = prefs.getString("latest-snapshot", null)
+            try {
+                val fixture = org.json.JSONObject(original!!)
+                val departures = org.json.JSONArray()
+                val deadline = java.time.Instant.now().plusSeconds(8)
+                for ((name, time) in listOf("ExpiresSoon" to deadline, "NextDeparture" to deadline.plusSeconds(240))) {
+                    departures.put(org.json.JSONObject().put("id", name).put("line", "6").put("destination", name)
+                        .put("scheduled", time.toString()).put("realtime", time.toString()).put("realtimeData", true))
+                }
+                fixture.put("departures", departures)
+                prefs.edit().putString("latest-snapshot", fixture.toString()).commit()
+                runBlocking { de.bremen.transit.widget.WidgetUpdates.render(context) }
+                Thread.sleep(2500)
+                instrumentation.runOnMainSync { views.forEach { view ->
+                    assertTrue("Widget did not reload changed snapshot", collect(view).any { it.text.toString() == "ExpiresSoon" })
+                } }
+                Thread.sleep(6500)
+                runBlocking { de.bremen.transit.widget.WidgetUpdates.render(context) }
+                Thread.sleep(2500)
+                instrumentation.runOnMainSync { views.forEach { view ->
+                    assertFalse("Expired departure remains", collect(view).any { it.text.toString() == "ExpiresSoon" })
+                    assertTrue("Next departure missing", collect(view).any { it.text.toString() == "NextDeparture" })
+                    assertTrue("Old native countdown remains", collect(view).none { it is android.widget.Chronometer })
+                } }
+            } finally { prefs.edit().putString("latest-snapshot", original).commit() }
         } finally { instrumentation.runOnMainSync { host.stopListening();activity.finish() };host.deleteHost();instrumentation.uiAutomation.dropShellPermissionIdentity() }
     }
     private fun collect(view: View): List<TextView> = when(view) { is TextView -> listOf(view);is ViewGroup -> (0 until view.childCount).flatMap { collect(view.getChildAt(it)) };else -> emptyList() }

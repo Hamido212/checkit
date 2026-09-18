@@ -2,17 +2,13 @@ package de.bremen.transit.widget
 
 import android.content.Context
 import androidx.work.*
-import androidx.glance.appwidget.updateAll
-import de.bremen.transit.data.TransitDisplay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 class RefreshWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        val repository = TransitDisplay.repository(applicationContext)
-        val success = runCatching { repository.refresh(repository.selectedStop()) }.isSuccess
-        BremenDepartureWidget().updateAll(applicationContext)
+        val success = WidgetUpdates.refresh(applicationContext, force = true)
         if (success) Result.success() else Result.retry()
     }
     companion object {

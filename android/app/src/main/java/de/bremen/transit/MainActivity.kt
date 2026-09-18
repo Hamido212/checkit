@@ -5,6 +5,9 @@ import android.content.ComponentName
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,7 +22,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.glance.appwidget.updateAll
 import de.bremen.transit.data.*
 import de.bremen.transit.widget.*
 import kotlinx.coroutines.Dispatchers
@@ -27,9 +29,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
+    private val notifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    override fun onResume() {
+        super.onResume()
+        LiveUpdateService.start(this)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFFFFB51B), background = Color(0xFF111317))) { CheckitApp(this) } }
+        if (android.os.Build.VERSION.SDK_INT >= 33 && !getPreferences(MODE_PRIVATE).getBoolean("notification-asked", false)) {
+            getPreferences(MODE_PRIVATE).edit().putBoolean("notification-asked", true).apply()
+            notifications.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+        setContent { MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFFFFB51B), background = Color(0xFF111317), onBackground = Color.White, onSurface = Color.White)) {
+            Surface(color = Color(0xFF090A0C), contentColor = Color.White) { CheckitApp(this) }
+        } }
     }
 }
 @Composable private fun CheckitApp(activity: MainActivity) {
@@ -42,14 +55,33 @@ class MainActivity : ComponentActivity() {
     var message by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    var liveMode by remember { mutableStateOf(LiveUpdateService.enabled(activity)) }
     val scope = rememberCoroutineScope()
     fun refresh() { scope.launch {
         busy = true
-        try { snapshot = withContext(Dispatchers.IO) { repository.refresh(stop) }; message = if(snapshot?.stale == true) "Keine Verbindung. Letzter Stand bleibt sichtbar." else "" }
+        try { WidgetUpdates.refresh(activity, force = true); snapshot = repository.load()?.takeIf { it.station.id == stop.id }; message = if(snapshot?.stale == true) "Keine Verbindung. Letzter Stand bleibt sichtbar." else "" }
         catch (_: Exception) { message = "Keine Verbindung. Bitte erneut versuchen." }
-        finally { busy = false; BremenDepartureWidget().updateAll(activity) }
+        finally { busy = false }
     } }
-    LaunchedEffect(Unit) { refresh(); RefreshWorker.schedule(activity) }
+    DisposableEffect(Unit) {
+        val preferences = activity.getSharedPreferences("departure-cache", android.content.Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            snapshot = repository.load()?.takeIf { it.station.id == stop.id }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    LaunchedEffect(Unit) {
+        RefreshWorker.schedule(activity)
+        activity.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            liveMode = LiveUpdateService.enabled(activity)
+            while (true) {
+                WidgetUpdates.refresh(activity)
+                snapshot = repository.load()?.takeIf { it.station.id == stop.id }
+                kotlinx.coroutines.delay(60_000)
+            }
+        }
+    }
     LaunchedEffect(Unit) { while(true) { kotlinx.coroutines.delay(1000); now = System.currentTimeMillis() } }
     Column(Modifier.fillMaxSize().background(Color(0xFF090A0C)).verticalScroll(rememberScrollState()).padding(22.dp), verticalArrangement = Arrangement.spacedBy(15.dp)) {
         Text("checkit.", fontSize = 32.sp, color = Color.White)
@@ -100,7 +132,16 @@ class MainActivity : ComponentActivity() {
             else message = "Homescreen gedrückt halten → Widgets → Checkit."
         }, modifier = Modifier.fillMaxWidth()) { Text("Widget hinzufügen") }
         Text("Haltestelle gilt für alle Checkit-Widgets. Zum Vergrößern die Ränder des Widgets ziehen. Aktualisieren mit ↻, Einstellungen mit Tipp auf die Haltestelle.", fontSize = 12.sp, color = Color(0xFFA8ADB5))
-        Text("Android aktualisiert im Hintergrund ungefähr alle 15 Minuten und kann Updates verzögern. Prüfe den Datenstand oder tippe auf ↻.", fontSize = 12.sp, color = Color(0xFFA8ADB5))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Live-Modus", modifier = Modifier.weight(1f))
+            Switch(checked = liveMode, onCheckedChange = { enabled ->
+                liveMode = enabled
+                LiveUpdateService.setEnabled(activity, enabled)
+                if (enabled) LiveUpdateService.start(activity)
+                else activity.stopService(android.content.Intent(activity, LiveUpdateService::class.java))
+            })
+        }
+        Text("Live-Modus: neue Daten jede Minute bei eingeschaltetem Bildschirm, mit dauerhafter Benachrichtigung. Ohne Live-Modus aktualisiert Android ungefähr alle 15 Minuten. Bei Xiaomi gegebenenfalls für Checkit unter Akku → Keine Beschränkungen und Autostart aktivieren. Prüfe den angezeigten Datenstand.", fontSize = 12.sp, color = Color(0xFFA8ADB5))
         TextButton(onClick = { activity.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://transitous.org/sources/"))) }) { Text("Daten: Transitous / MOTIS · Datenquellen ↗", fontSize = 11.sp) }
         Text("© OpenStreetMap-Mitwirkende · Kein offizielles BSAG-Produkt", fontSize = 10.sp, color = Color(0xFFA8ADB5))
     }

@@ -2,7 +2,7 @@
 
 Die native Checkit-App lädt den normalisierten HTTPS-Vertrag vom Checkit-Backend. MainActivity bietet Haltestellensuche, lokale Auswahl, Vorschau und Widget-Pinning.
 
-`BremenDepartureWidget` rendert ausschließlich Repository-Daten mit `SizeMode.Exact`, festen Linien-/Zeitspalten und einer flexiblen Zielspalte. `RefreshWorker` erledigt Netzwerkzugriffe im IO-Kontext, aktualisiert danach Glance und plant Hintergrundupdates mit 15 Minuten Mindestintervall. Restzeiten laufen über native Android-Chronometer im Launcher weiter, ohne zusätzliche Netzwerkabfragen. MIN:SEK ist die verbleibende Zeit; negative Werte bedeuten eine bereits vergangene Abfahrt. Ergänzende Uhrzeiten sind Europe/Berlin. Lange Ziele werden einzeilig mit Ellipsis dargestellt.
+`BremenDepartureWidget` zeigt verbleibende Minuten ohne frei laufenden Chronometer. `WidgetUpdates` koordiniert Netzwerkzugriffe und aktualisiert den Glance-Zustand jedes Widgets. Der abschaltbare `LiveUpdateService` ist ein sichtbarer Foreground-Service (specialUse: dauerhafte, vom Nutzer aktivierte Homescreen-Abfahrtsanzeige). Bei eingeschaltetem Bildschirm lädt er jede Minute Daten und rendert alle zehn Sekunden Minuten und noch kommende Abfahrten neu. Bei ausgeschaltetem Bildschirm pausiert er ohne Wake-Lock; beim Einschalten lädt er erneut. Eine dauerhafte Benachrichtigung bietet einen Stopp-Knopf. Ohne Live-Modus greift der 15-Minuten-WorkManager-Fallback. Hersteller-Energiesparregeln und Force-Stop können Updates verhindern; der Datenstand bleibt sichtbar. Nach Installation die App einmal öffnen.
 
 Build, Release-Signierung, Installation und Grenzen stehen in der [Projekt-README](../README.md).
 
