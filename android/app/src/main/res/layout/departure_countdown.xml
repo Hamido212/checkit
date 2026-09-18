@@ -1,0 +1,4 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="end|center_vertical">
+    <Chronometer android:id="@+id/countdown" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="end" android:textColor="#FFB51B" android:textSize="13sp" android:textStyle="bold" android:fontFamily="sans-serif-medium" android:singleLine="true" android:includeFontPadding="false" />
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="end" android:text="MIN:SEK" android:textSize="7sp" android:textColor="#A8ADB5" android:includeFontPadding="false" />
+</LinearLayout>

@@ -1,0 +1,10 @@
+android/
+windows/
+artifacts/
+tests/
+test-results/
+.git/
+node_modules/
+*.jks
+*.keystore
+.env*

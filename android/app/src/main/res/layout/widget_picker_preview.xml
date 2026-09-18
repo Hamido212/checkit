@@ -1,0 +1,15 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="7dp" android:background="@drawable/widget_frame">
+<LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:padding="12dp" android:orientation="vertical" android:background="@drawable/widget_screen">
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Bremen Hbf       ↻" android:textSize="16sp" android:textColor="#F5F6F4" android:textStyle="bold" android:maxLines="1"/>
+<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="CHECKIT · WIDGET-VORSCHAU" android:textSize="9sp" android:textColor="#A8B2B2" android:paddingTop="4dp" android:paddingBottom="10dp"/>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+<TextView android:layout_width="32dp" android:layout_height="wrap_content" android:text="6" android:gravity="center" android:background="#333B3D" android:textColor="#FFFFFF" android:textStyle="bold" android:padding="3dp"/>
+<TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Flughafen" android:paddingStart="8dp" android:textColor="#F5F6F4" android:maxLines="1" android:ellipsize="end"/>
+<TextView android:layout_width="60dp" android:layout_height="wrap_content" android:text="3 min" android:gravity="end" android:textColor="#F5BD55" android:textStyle="bold"/>
+</LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingTop="10dp">
+<TextView android:layout_width="32dp" android:layout_height="wrap_content" android:text="4" android:gravity="center" android:background="#333B3D" android:textColor="#FFFFFF" android:textStyle="bold" android:padding="3dp"/>
+<TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Arsten" android:paddingStart="8dp" android:textColor="#F5F6F4" android:maxLines="1" android:ellipsize="end"/>
+<TextView android:layout_width="60dp" android:layout_height="wrap_content" android:text="7 min" android:gravity="end" android:textColor="#F5BD55" android:textStyle="bold"/>
+</LinearLayout>
+</LinearLayout></LinearLayout>

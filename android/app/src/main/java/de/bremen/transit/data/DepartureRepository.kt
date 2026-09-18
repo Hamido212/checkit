@@ -1,0 +1,117 @@
+package de.bremen.transit.data
+
+import android.content.Context
+import org.json.JSONArray
+import org.json.JSONObject
+
+class DepartureRepository(
+    context: Context,
+    private val apiClient: TransitApiClient
+) {
+    private val preferences = context.getSharedPreferences("departure-cache", Context.MODE_PRIVATE)
+
+    fun refresh(stop: Stop): DepartureSnapshot {
+        return try {
+            val fresh = apiClient.getDepartures(stop)
+            save(fresh)
+            fresh
+        } catch (error: Exception) {
+            val cached = load()?.takeIf { it.station.id == stop.id }?.copy(stale = true) ?: throw error
+            save(cached)
+            cached
+        }
+    }
+
+    fun load(): DepartureSnapshot? {
+        val raw = preferences.getString(KEY_SNAPSHOT, null) ?: return null
+        return runCatching { decode(JSONObject(raw)) }.getOrNull()
+    }
+
+    fun selectedStop(): Stop {
+        return Stop(
+            id = preferences.getString(KEY_STOP_ID, DEFAULT_STOP.id) ?: DEFAULT_STOP.id,
+            name = preferences.getString(KEY_STOP_NAME, DEFAULT_STOP.name) ?: DEFAULT_STOP.name
+        )
+    }
+
+    fun saveSelectedStop(stop: Stop) {
+        preferences.edit()
+            .putString(KEY_STOP_ID, stop.id)
+            .putString(KEY_STOP_NAME, stop.name)
+            .apply()
+    }
+
+    private fun save(snapshot: DepartureSnapshot) {
+        preferences.edit()
+            .putString(KEY_SNAPSHOT, encode(snapshot).toString())
+            .putLong(KEY_LAST_SUCCESS, System.currentTimeMillis())
+            .apply()
+    }
+
+    private fun encode(snapshot: DepartureSnapshot): JSONObject {
+        val departures = JSONArray()
+        snapshot.departures.forEach { departure ->
+            departures.put(
+                JSONObject()
+                    .put("id", departure.id)
+                    .put("line", departure.line)
+                    .put("destination", departure.destination)
+                    .put("platform", departure.platform)
+                    .put("scheduled", departure.scheduled)
+                    .put("realtime", departure.realtime)
+                    .put("delayMinutes", departure.delayMinutes)
+                    .put("realtimeData", departure.realtimeData)
+                    .put("cancelled", departure.cancelled)
+                    .put("color", departure.color)
+                    .put("textColor", departure.textColor)
+            )
+        }
+        return JSONObject()
+            .put(
+                "station",
+                JSONObject().put("id", snapshot.station.id).put("name", snapshot.station.name)
+            )
+            .put("generatedAt", snapshot.generatedAt)
+            .put("stale", snapshot.stale)
+            .put("departures", departures)
+    }
+
+    private fun decode(root: JSONObject): DepartureSnapshot {
+        val stationJson = root.getJSONObject("station")
+        val items = root.getJSONArray("departures")
+        val departures = buildList {
+            for (index in 0 until items.length()) {
+                val item = items.getJSONObject(index)
+                add(
+                    Departure(
+                        id = item.getString("id"),
+                        line = item.getString("line"),
+                        destination = item.getString("destination"),
+                        platform = item.optString("platform").ifBlank { null },
+                        scheduled = item.optString("scheduled").ifBlank { null },
+                        realtime = item.optString("realtime").ifBlank { null },
+                        delayMinutes = item.optInt("delayMinutes"),
+                        realtimeData = item.optBoolean("realtimeData"),
+                        cancelled = item.optBoolean("cancelled"),
+                        color = item.optString("color").takeUnless { it.isBlank() || it == "null" },
+                        textColor = item.optString("textColor").takeUnless { it.isBlank() || it == "null" }
+                    )
+                )
+            }
+        }
+        return DepartureSnapshot(
+            station = Stop(stationJson.getString("id"), stationJson.getString("name")),
+            generatedAt = root.optString("generatedAt"),
+            departures = departures,
+            stale = root.optBoolean("stale", false)
+        )
+    }
+
+    companion object {
+        private const val KEY_SNAPSHOT = "latest-snapshot"
+        private const val KEY_LAST_SUCCESS = "last-success"
+        private const val KEY_STOP_ID = "selected-stop-id"
+        private const val KEY_STOP_NAME = "selected-stop-name"
+        private val DEFAULT_STOP = Stop("de-DELFI_de:04011:13927_G", "Bremen Hauptbahnhof")
+    }
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#090a0c" />
+    <title>Checkit — Live-Abfahrten Bremen</title><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icon.svg"><link rel="apple-touch-icon" href="/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="board" aria-live="polite">
+        <header class="board-header">
+          <div>
+            <p class="brand"><a href="/" style="color:inherit;text-decoration:none">CHECKIT <span>/</span> BREMEN</a></p>
+            <h1 id="station-name">Bremen Hauptbahnhof</h1>
+            <p id="station-modes" class="station-modes">Straßenbahn · Bus · Regionalverkehr</p>
+          </div>
+          <div class="header-clock">
+            <time id="clock">--:--</time>
+            <span id="date">--</span>
+          </div>
+        </header>
+
+        <div class="board-tools">
+          <div>
+            <p class="section-label">Abfahrten</p>
+            <p id="status" class="status">Lade Daten …</p>
+          </div>
+          <div class="tool-actions">
+            <button id="search-toggle" class="button secondary-button" type="button">Haltestelle ändern</button>
+            <button id="refresh" class="button refresh-button" type="button" aria-label="Jetzt aktualisieren">↻</button>
+          </div>
+        </div>
+
+        <form id="search-form" class="search-panel hidden">
+          <label for="search-input">Haltestelle in Bremen suchen</label>
+          <div class="search-row">
+            <input id="search-input" type="search" placeholder="z. B. Domsheide" autocomplete="off" />
+            <button class="button primary-button" type="submit">Suchen</button>
+          </div>
+          <div id="search-results" class="search-results"></div>
+        </form>
+
+        <div class="table-head" aria-hidden="true">
+          <span>Linie</span><span>Ziel</span><span>Steig</span><span class="align-right">Abfahrt</span>
+        </div>
+        <div id="departures" class="departures"></div>
+
+        <footer class="board-footer">
+          <span><i id="live-dot" class="live-dot"></i><span id="source-label">LIVE</span></span>
+          <span id="updated-label">Datenstand --:--</span>
+          <span id="next-refresh">Nächste Aktualisierung --:--</span>
+        </footer>
+      </section>
+      <p class="attribution"><a href="/">← Checkit</a> · <a href="https://transitous.org/sources/">Daten: Transitous / MOTIS</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Kein offizielles BSAG-Produkt</p>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
+

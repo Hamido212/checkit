@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Checkit</string>
+    <string name="widget_description">Bremen-Abfahrten mit laufendem Countdown</string>
+</resources>
