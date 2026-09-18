@@ -19,7 +19,7 @@ Windows ist ein eigenständiges Desktop-Fenster, keine Erweiterung des Windows-1
 
 **Android:** `checkit-android.apk` aus den Releases installieren, Checkit öffnen, Haltestelle auswählen und „Widget hinzufügen“ tippen. Alternativ über das Widgets-Menü des Launchers. Alle Widgets verwenden dieselbe Haltestelle. Ein vorhandener alter Debug-Build hat einen anderen Signaturschlüssel und muss vor dem Wechsel zur Release-APK deinstalliert werden (lokale Auswahl geht dabei verloren).
 
-**Windows:** `checkit-windows-x64.zip` entpacken und `Checkit.exe` starten. Keine zusätzliche .NET-Installation nötig. Über die Kopfzeile verschieben, unten rechts skalieren; ◇ schaltet „Immer im Vordergrund“ um. Die EXE ist nicht mit einem kommerziellen Windows-Code-Signing-Zertifikat signiert.
+**Windows:** `Checkit.exe` herunterladen und direkt starten. Keine Installation notwendig. Alternativ die portable ZIP entpacken. Keine zusätzliche .NET-Installation nötig. Über die Kopfzeile verschieben, unten rechts skalieren; ◇ schaltet „Immer im Vordergrund“ um. Die EXE ist nicht mit einem kommerziellen Windows-Code-Signing-Zertifikat signiert.
 
 ## Aktualisierung
 
@@ -61,7 +61,7 @@ Benötigt .NET 10 SDK. Einstellungen/Cache: `%LOCALAPPDATA%\Checkit`.
 npx vercel deploy --prod
 ```
 
-`vercel.json` verwendet statische Dateien aus `public` und eine Node-Funktion unter `api/index.js`. Website und native Clients teilen denselben normalisierten API-Vertrag. APK/ZIP liegen in GitHub Releases, nicht im Vercel-Build.
+`vercel.json` verwendet statische Dateien aus `public` und eine Node-Funktion unter `api/index.js`. Website und native Clients teilen denselben normalisierten API-Vertrag. APK/EXE/ZIP liegen in GitHub Releases, nicht im Vercel-Build.
 
 ## Daten, Lizenz und Grenzen
 
@@ -70,3 +70,5 @@ Code: MIT. Daten unter den jeweiligen [Transitous-Quelllizenzen](https://transit
 Keine Accounts, kein Tracking, kein Datenbankdienst. Präferenzen und Cache bleiben lokal. Vercel und GitHub verarbeiten technische Verbindungsdaten beim Abruf.
 
 
+
+Windows-Icon-Regressionsprüfung: `powershell.exe -NoProfile -STA -File scripts/test-windows-icon.ps1`. Nach dem Publish zusätzlich die tatsächlich ausgelieferte EXE starten und das Live-Fenster prüfen.

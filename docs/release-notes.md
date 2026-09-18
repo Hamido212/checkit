@@ -1,3 +1,10 @@
+# Checkit 0.2.2 — Windows-Startkorrektur
+
+- Behebt einen Startabsturz in Windows 0.2.1: Das weiße ICO war für Explorer lesbar, aber nicht für den WPF-Bilddecoder. Alle sechs Größen werden jetzt als kompatible 32-Bit-Bitmap gespeichert.
+- Direkter Download von Checkit.exe; weiterhin portabel ohne Installation. ZIP bleibt als Alternative verfügbar.
+- Android bleibt unverändert auf 0.2.1.
+- WPF-Iconprüfung sowie tatsächlicher EXE-Start mit Live-Abfahrten erfolgreich geprüft.
+
 # Checkit 0.2.1
 
 - Android-Live-Modus: neue Abfahrten jede Minute bei eingeschaltetem Bildschirm, mit abschaltbarer dauerhafter Benachrichtigung.
