@@ -76,7 +76,8 @@ class WidgetLayoutTest {
                     val location=IntArray(2);view.getLocationOnScreen(location)
                     for(t in times) {
                         val pos=IntArray(2);t.getLocationOnScreen(pos)
-                        assertTrue("Time clipped vertically",pos[1]+t.height<=location[1]+view.height)
+                        val bottomInset = (22 * context.resources.displayMetrics.density).toInt()
+                        assertTrue("Time clipped by inner frame",pos[1]+t.height<=location[1]+view.height-bottomInset)
                         assertTrue("Time clipped horizontally",pos[0]+t.width<=location[0]+view.width)
                         assertTrue("Countdown must run backwards", t.isCountDown)
                         for(destination in texts.filter { label -> live.departures.any { it.destination == label.text.toString() } }) {

@@ -37,7 +37,8 @@ class BremenDepartureWidget : GlanceAppWidget() {
 
 @Composable private fun Board(snapshot: DepartureSnapshot?, stop: Stop) {
     val size = LocalSize.current
-    val rows = ((size.height.value - 62) / 28).toInt().coerceIn(1, 6)
+    // Allow for launcher padding, the frame, header and font metrics before allocating rows.
+    val rows = ((size.height.value - 90) / 28).toInt().coerceIn(1, 6)
     val departures = snapshot?.departures?.filter { TransitDisplay.upcoming(it) }.orEmpty()
     Box(GlanceModifier.fillMaxSize().background(ColorProvider(Color(0xFF434A4C))).cornerRadius(16.dp).padding(1.dp)) {
     Box(GlanceModifier.fillMaxSize().background(ColorProvider(Color(0xFF252829))).cornerRadius(15.dp).padding(5.dp)) {
