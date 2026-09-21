@@ -7,6 +7,8 @@
 ## Was funktioniert
 
 - Bremen Hauptbahnhof als Standard, Haltestellensuche und gespeicherte Auswahl.
+- Favoriten: mehrere Haltestellen lokal speichern und per Tipp wechseln – in Web-App, Android und Windows.
+- Abfahrts-Erinnerung: pro Abfahrt 5, 10 oder 15 Minuten vorher Bescheid bekommen (Web: Browser-Benachrichtigung, Android: exakter Alarm, Windows: Popup mit Ton).
 - Bus, Straßenbahn und Regionalverkehr über Transitous/MOTIS; Verspätungen, Ausfälle und Kennzeichnung von Echtzeit gegenüber Fahrplan.
 - Responsive Website mit Live-Vorschau und eigenem Abfahrtsboard; installierbare Web-App mit lokalem Offline-Stand.
 - Native Android-App mit Glance-Homescreen-Widget, echten Spalten, anpassbarer Zeilenanzahl, manueller Aktualisierung, WorkManager und lokalem Cache.

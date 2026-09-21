@@ -41,6 +41,37 @@ class DepartureRepository(
             .apply()
     }
 
+    fun getFavorites(): List<Stop> {
+        val raw = preferences.getString(KEY_FAVORITES, null)
+        val parsed = runCatching {
+            val array = JSONArray(raw ?: "")
+            buildList {
+                for (index in 0 until array.length()) {
+                    val item = array.getJSONObject(index)
+                    add(Stop(item.getString("id"), item.getString("name")))
+                }
+            }
+        }.getOrDefault(emptyList())
+        return parsed.ifEmpty { listOf(selectedStop()).also { saveFavorites(it) } }
+    }
+
+    fun saveFavorites(stops: List<Stop>) {
+        val array = JSONArray()
+        stops.forEach { array.put(JSONObject().put("id", it.id).put("name", it.name)) }
+        preferences.edit().putString(KEY_FAVORITES, array.toString()).apply()
+    }
+
+    fun addFavorite(stop: Stop) {
+        val current = getFavorites()
+        if (current.none { it.id == stop.id }) saveFavorites(current + stop)
+    }
+
+    fun removeFavorite(stopId: String) {
+        saveFavorites(getFavorites().filter { it.id != stopId })
+    }
+
+    fun isFavorite(stopId: String) = getFavorites().any { it.id == stopId }
+
     private fun save(snapshot: DepartureSnapshot) {
         preferences.edit()
             .putString(KEY_SNAPSHOT, encode(snapshot).toString())
@@ -112,6 +143,7 @@ class DepartureRepository(
         private const val KEY_LAST_SUCCESS = "last-success"
         private const val KEY_STOP_ID = "selected-stop-id"
         private const val KEY_STOP_NAME = "selected-stop-name"
+        private const val KEY_FAVORITES = "favorite-stops"
         private val DEFAULT_STOP = Stop("de-DELFI_de:04011:13927_G", "Bremen Hauptbahnhof")
     }
 }

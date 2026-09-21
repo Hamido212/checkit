@@ -1,3 +1,9 @@
+# Unreleased — Favoriten & Abfahrts-Erinnerungen
+
+- **Favoriten:** Mehrere Haltestellen lokal speichern, per Tipp wechseln und einzeln entfernen. Web (Board), Android-App und Windows-Desktop teilen dasselbe Konzept; alles bleibt lokal auf dem Gerät, kein Account nötig. Die bisherige Auswahl wird beim ersten Start automatisch als Favorit übernommen.
+- **Abfahrts-Erinnerung:** Pro Abfahrt eine Erinnerung 5, 10 oder 15 Minuten vorher. Web nutzt die Browser-Benachrichtigung (Board muss geöffnet sein), Android plant exakte Alarme per AlarmManager (funktioniert auch im Standby, mit Hinweis bei Ausfall), Windows zeigt ein Popup mit Ton. Aktive Erinnerungen lassen sich in allen Clients einsehen und löschen; ausgelöste Erinnerungen werden automatisch aufgeräumt.
+- Android: neue Berechtigung `SCHEDULE_EXACT_ALARM` für exakte Erinnerungen.
+
 # Checkit 0.2.2 — Windows-Startkorrektur
 
 - Behebt einen Startabsturz in Windows 0.2.1: Das weiße ICO war für Explorer lesbar, aber nicht für den WPF-Bilddecoder. Alle sechs Größen werden jetzt als kompatible 32-Bit-Bitmap gespeichert.

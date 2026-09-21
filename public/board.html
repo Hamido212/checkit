@@ -28,6 +28,7 @@
             <p id="status" class="status">Lade Daten …</p>
           </div>
           <div class="tool-actions">
+            <button id="favorites-toggle" class="button secondary-button" type="button">★ Favoriten</button>
             <button id="search-toggle" class="button secondary-button" type="button">Haltestelle ändern</button>
             <button id="refresh" class="button refresh-button" type="button" aria-label="Jetzt aktualisieren">↻</button>
           </div>
@@ -42,6 +43,14 @@
           <div id="search-results" class="search-results"></div>
         </form>
 
+        <section id="favorites-panel" class="search-panel hidden" aria-label="Favoriten">
+          <label>Deine Haltestellen</label>
+          <div id="favorites-list" class="favorites-list"></div>
+          <div class="search-row" style="margin-top:7px">
+            <button id="favorite-add" class="button primary-button" type="button">＋ Aktuelle Haltestelle speichern</button>
+          </div>
+        </section>
+
         <div class="table-head" aria-hidden="true">
           <span>Linie</span><span>Ziel</span><span>Steig</span><span class="align-right">Abfahrt</span>
         </div>
@@ -55,6 +64,12 @@
       </section>
       <p class="attribution"><a href="/">← Checkit</a> · <a href="https://transitous.org/sources/">Daten: Transitous / MOTIS</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Kein offizielles BSAG-Produkt</p>
     </main>
+    <div id="alarm-popover" class="alarm-popover hidden" role="menu" aria-label="Abfahrts-Erinnerung">
+      <p>Erinnern vor Abfahrt</p>
+      <button type="button" data-minutes="5">in 5 Minuten</button>
+      <button type="button" data-minutes="10">in 10 Minuten</button>
+      <button type="button" data-minutes="15">in 15 Minuten</button>
+    </div>
     <script type="module" src="/app.js"></script>
   </body>
 </html>

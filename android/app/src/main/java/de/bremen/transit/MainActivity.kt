@@ -1,8 +1,13 @@
 package de.bremen.transit
 
 import android.appwidget.AppWidgetManager
+import android.app.AlarmManager
 import android.content.ComponentName
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -56,6 +62,9 @@ class MainActivity : ComponentActivity() {
     var busy by remember { mutableStateOf(false) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     var liveMode by remember { mutableStateOf(LiveUpdateService.enabled(activity)) }
+    var favorites by remember { mutableStateOf(repository.getFavorites()) }
+    var alarms by remember { mutableStateOf(DepartureAlarm.getAlarms(activity)) }
+    var alarmTarget by remember { mutableStateOf<Departure?>(null) }
     val scope = rememberCoroutineScope()
     fun refresh() { scope.launch {
         busy = true
@@ -63,6 +72,19 @@ class MainActivity : ComponentActivity() {
         catch (_: Exception) { message = "Keine Verbindung. Bitte erneut versuchen." }
         finally { busy = false }
     } }
+    fun setAlarm(departure: Departure, minutes: Int) {
+        val manager = activity.getSystemService(AlarmManager::class.java)
+        if (Build.VERSION.SDK_INT >= 31 && !manager.canScheduleExactAlarms()) {
+            activity.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:${activity.packageName}")))
+            message = "Bitte exakte Erinnerungen erlauben und erneut tippen."
+            return
+        }
+        if (DepartureAlarm.schedule(activity, departure, stop, minutes)) {
+            alarms = DepartureAlarm.getAlarms(activity)
+            message = "⏰ Erinnerung aktiv: Linie ${departure.line} in $minutes Minuten."
+        } else message = "Dafür ist es zu spät – die Abfahrt steht kurz bevor."
+        alarmTarget = null
+    }
     DisposableEffect(Unit) {
         val preferences = activity.getSharedPreferences("departure-cache", android.content.Context.MODE_PRIVATE)
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
@@ -89,6 +111,11 @@ class MainActivity : ComponentActivity() {
         Column(Modifier.fillMaxWidth().background(Color(0xFF252829),RoundedCornerShape(14.dp)).border(1.dp,Color(0xFF596266),RoundedCornerShape(14.dp)).padding(14.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stop.name, Modifier.weight(1f), fontSize = 17.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                val starred = favorites.any { it.id == stop.id }
+                TextButton(onClick = {
+                    if (starred) repository.removeFavorite(stop.id) else repository.addFavorite(stop)
+                    favorites = repository.getFavorites()
+                }, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(35.dp).height(28.dp)) { Text(if (starred) "★" else "☆", fontSize = 19.sp, color = Color(0xFFFFB51B)) }
                 TextButton(onClick = { refresh() }, enabled = !busy, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(35.dp).height(28.dp)) { Text("↻", fontSize = 21.sp) }
             }
             Text(TransitDisplay.status(snapshot), fontSize = 10.sp, color = Color(0xFFA8ADB5))
@@ -107,11 +134,58 @@ class MainActivity : ComponentActivity() {
                         Text(if(d.cancelled) "AUS" else TransitDisplay.remaining(d.realtime ?: d.scheduled, now), Modifier.fillMaxWidth(), color = Color(0xFFFFB51B), fontSize = 14.sp, textAlign = TextAlign.End)
                         Text(TransitDisplay.time(d.realtime ?: d.scheduled), Modifier.fillMaxWidth(), color = Color(0xFFA8ADB5), fontSize = 9.sp, textAlign = TextAlign.End)
                     }
+                    val alarmActive = alarms.any { it.departureId == d.id }
+                    TextButton(onClick = {
+                        if (alarmActive) { DepartureAlarm.cancel(activity, d.id); alarms = DepartureAlarm.getAlarms(activity); message = "⏰ Erinnerung gelöscht." }
+                        else alarmTarget = d
+                    }, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(34.dp).height(30.dp)) {
+                        Text("⏰", fontSize = 15.sp, color = if (alarmActive) Color(0xFFFFB51B) else Color(0xFFA8ADB5))
+                    }
                 }
             }
         }
         if(busy) LinearProgressIndicator(Modifier.fillMaxWidth())
         if(message.isNotBlank()) Text(message, color = Color(0xFFFFB51B), fontSize = 12.sp)
+        alarmTarget?.let { target ->
+            AlertDialog(
+                onDismissRequest = { alarmTarget = null },
+                title = { Text("Abfahrts-Erinnerung") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("Wann soll Checkit dich an Linie ${target.line} nach ${target.destination} erinnern?")
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(5, 10, 15).forEach { minutes ->
+                                Button(onClick = { setAlarm(target, minutes) }) { Text("$minutes Min.") }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = { TextButton(onClick = { alarmTarget = null }) { Text("Abbrechen") } }
+            )
+        }
+        Text("Favoriten", fontSize = 19.sp)
+        if(favorites.isEmpty()) Text("Noch keine Favoriten. Tippe oben auf ☆, um die aktuelle Haltestelle zu speichern.", fontSize = 12.sp, color = Color(0xFFA8ADB5))
+        favorites.forEach { favorite ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedButton(modifier = Modifier.weight(1f), enabled = !busy && favorite.id != stop.id, onClick = {
+                    stop = favorite; repository.saveSelectedStop(favorite); snapshot = null; refresh()
+                }) { Text(favorite.name, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                TextButton(onClick = { repository.removeFavorite(favorite.id); favorites = repository.getFavorites() },
+                    contentPadding = PaddingValues(0.dp), modifier = Modifier.width(40.dp)) { Text("✕", color = Color(0xFFA8ADB5)) }
+            }
+        }
+        if(alarms.isNotEmpty()) {
+            Text("Aktive Erinnerungen", fontSize = 19.sp)
+            alarms.forEach { alarm ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("⏰ Linie ${alarm.line} nach ${alarm.destination} · ${DepartureAlarm.fireTimeLabel(alarm.fireAt)} Uhr",
+                        Modifier.weight(1f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    TextButton(onClick = { DepartureAlarm.cancel(activity, alarm.departureId); alarms = DepartureAlarm.getAlarms(activity) },
+                        contentPadding = PaddingValues(0.dp), modifier = Modifier.width(40.dp)) { Text("✕", color = Color(0xFFA8ADB5)) }
+                }
+            }
+        }
         Text("Haltestelle auswählen", fontSize = 19.sp)
         OutlinedTextField(value = query, onValueChange = { query = it }, label = { Text("z. B. Bremen Domsheide") }, singleLine = true, modifier = Modifier.fillMaxWidth())
         Button(enabled = !busy && query.isNotBlank(), onClick = { scope.launch {
@@ -131,7 +205,7 @@ class MainActivity : ComponentActivity() {
             if(manager.isRequestPinAppWidgetSupported) manager.requestPinAppWidget(ComponentName(activity, BremenDepartureWidgetReceiver::class.java), null, null)
             else message = "Homescreen gedrückt halten → Widgets → Checkit."
         }, modifier = Modifier.fillMaxWidth()) { Text("Widget hinzufügen") }
-        Text("Haltestelle gilt für alle Checkit-Widgets. Zum Vergrößern die Ränder des Widgets ziehen. Aktualisieren mit ↻, Einstellungen mit Tipp auf die Haltestelle.", fontSize = 12.sp, color = Color(0xFFA8ADB5))
+        Text("Tippe auf einen Favoriten, um die Haltestelle zu wechseln. Die Auswahl gilt für App und alle Checkit-Widgets. Zum Vergrößern die Ränder des Widgets ziehen. Aktualisieren mit ↻, Einstellungen mit Tipp auf die Haltestelle.", fontSize = 12.sp, color = Color(0xFFA8ADB5))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("Live-Modus", modifier = Modifier.weight(1f))
             Switch(checked = liveMode, onCheckedChange = { enabled ->
