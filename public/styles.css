@@ -6,6 +6,7 @@
 .alarm-popover p{margin:0 0 4px;font-size:10px;color:var(--muted)}
 .alarm-popover button{background:#232a2b;color:#fff;border:0;border-radius:3px;padding:8px 10px;text-align:left;font-size:12px}
 .alarm-popover button:hover{background:#303637;color:#fff}
+.alarm-popover.hidden{display:none}
 .favorites-list{display:grid;gap:4px;margin-top:7px}
 .favorite-item{display:flex;gap:4px}
 .favorite-name{flex:1;padding:10px;background:#232a2b;color:#fff;border:0;border-radius:3px;text-align:left}
