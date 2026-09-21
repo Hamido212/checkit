@@ -10,7 +10,8 @@ const formatTime=v=>new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',ho
 
 /* ---------- Favoriten ---------- */
 let favorites=read('checkit-favorites',null);
-if(!Array.isArray(favorites)||!favorites.length){favorites=[{id:selectedStop.id,name:selectedStop.name}];save('checkit-favorites',favorites);}
+if(favorites===null){favorites=[{id:selectedStop.id,name:selectedStop.name}];save('checkit-favorites',favorites);}
+if(!Array.isArray(favorites))favorites=[];
 const isFavorite=id=>favorites.some(f=>f.id===id);
 function addFavorite(stop){if(!isFavorite(stop.id)){favorites=[...favorites,{id:stop.id,name:stop.name}];save('checkit-favorites',favorites);}renderFavorites();}
 function removeFavorite(id){favorites=favorites.filter(f=>f.id!==id);save('checkit-favorites',favorites);renderFavorites();}
