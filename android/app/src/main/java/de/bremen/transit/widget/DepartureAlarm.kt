@@ -66,15 +66,34 @@ object DepartureAlarm {
         if (fireAt <= System.currentTimeMillis() + 20_000) return false
         cancel(context, departure.id)
         val alarm = Alarm(departure.id, departure.line, departure.destination, stop.id, stop.name, fireAt, minutesBefore)
+        if (!scheduleSystemAlarm(context, alarm)) return false
         save(context, getAlarms(context) + alarm)
+        return true
+    }
+
+    /** AlarmManager clears scheduled alarms after a reboot or app update. */
+    fun restore(context: Context): Int {
+        val alarms = getAlarms(context)
+        save(context, alarms)
+        return alarms.count { scheduleSystemAlarm(context, it) }
+    }
+
+    private fun scheduleSystemAlarm(context: Context, alarm: Alarm): Boolean {
         val manager = context.getSystemService(AlarmManager::class.java)
         val pending = pendingIntent(context, alarm)
-        if (Build.VERSION.SDK_INT >= 31 && manager.canScheduleExactAlarms()) {
-            manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fireAt, pending)
-        } else {
-            manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fireAt, pending)
+        return runCatching {
+            if (Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()) {
+                manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarm.fireAt, pending)
+            } else {
+                manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarm.fireAt, pending)
+            }
+            true
+        }.getOrElse {
+            runCatching {
+                manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarm.fireAt, pending)
+                true
+            }.getOrDefault(false)
         }
-        return true
     }
 
     fun cancel(context: Context, departureId: String) {

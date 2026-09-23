@@ -43,8 +43,9 @@ class DepartureRepository(
 
     fun getFavorites(): List<Stop> {
         val raw = preferences.getString(KEY_FAVORITES, null)
+        if (raw == null) return listOf(selectedStop()).also { saveFavorites(it) }
         val parsed = runCatching {
-            val array = JSONArray(raw ?: "")
+            val array = JSONArray(raw)
             buildList {
                 for (index in 0 until array.length()) {
                     val item = array.getJSONObject(index)
@@ -52,7 +53,7 @@ class DepartureRepository(
                 }
             }
         }.getOrDefault(emptyList())
-        return parsed.ifEmpty { listOf(selectedStop()).also { saveFavorites(it) } }
+        return parsed
     }
 
     fun saveFavorites(stops: List<Stop>) {

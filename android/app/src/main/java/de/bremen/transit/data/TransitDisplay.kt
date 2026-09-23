@@ -15,7 +15,7 @@ object TransitDisplay {
         DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.of("Europe/Berlin")).format(Instant.parse(value))
     }.getOrDefault("—")
     fun expired(value: String): Boolean = runCatching { Instant.parse(value).plusSeconds(120).isBefore(Instant.now()) }.getOrDefault(true)
-    fun upcoming(d: Departure, now: Long = System.currentTimeMillis()): Boolean = runCatching { Instant.parse(d.realtime ?: d.scheduled).toEpochMilli() > now }.getOrDefault(false)
+    fun upcoming(d: Departure, now: Long = System.currentTimeMillis()): Boolean = runCatching { Instant.parse(d.realtime ?: d.scheduled).toEpochMilli() > now - 60_000L }.getOrDefault(false)
     fun status(snapshot: DepartureSnapshot?): String = when {
         snapshot == null -> "OFFLINE · Bitte aktualisieren"
         snapshot.stale || expired(snapshot.generatedAt) -> "VERALTET · Stand ${time(snapshot.generatedAt)}"

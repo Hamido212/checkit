@@ -43,15 +43,32 @@ function scheduleAlarm(dep,minutesBefore){
  cancelAlarm(dep.id,true);
  const alarm={id:dep.id,line:dep.line.label,destination:dep.destination,stopId:selectedStop.id,stopName:selectedStop.name,fireAt,minutesBefore};
  alarms.push(alarm);persistAlarms();armAlarmTimer(alarm);render();
- $('status').textContent=`⏰ Erinnerung aktiv: ${alarm.line} nach ${alarm.destination}, ${minutesBefore} Min. vorher.`;
+ const notificationReady='Notification'in window&&Notification.permission==='granted';
+ $('status').textContent=notificationReady
+  ?`⏰ Erinnerung aktiv: ${alarm.line} nach ${alarm.destination}, ${minutesBefore} Min. vorher.`
+  :'⏰ Erinnerung nur im offenen Board aktiv. Systembenachrichtigungen sind nicht erlaubt oder nicht verfügbar.';
 }
 function cancelAlarm(id,silent){clearAlarmTimer(id);alarms=alarms.filter(a=>a.id!==id);persistAlarms();if(!silent)render();}
-function fireAlarm(id){
+async function showAlarmNotification(body){
+ if(!('Notification'in window)||Notification.permission!=='granted')return false;
+ try{
+  if('serviceWorker'in navigator){
+   const registration=await navigator.serviceWorker.getRegistration();
+   if(registration?.active&&typeof registration.showNotification==='function'){
+    await registration.showNotification('Checkit ⏰',{body,icon:'/icon-192.png'});
+    return true;
+   }
+  }
+  new Notification('Checkit ⏰',{body});
+  return true;
+ }catch{return false;}
+}
+async function fireAlarm(id){
  const alarm=alarmFor(id);if(!alarm)return;
  cancelAlarm(id,true);render();
- const body=`${alarm.line} nach ${alarm.destination} fährt in ${alarm.minutesBefore} Minuten ab · ${alarm.stopName}`;
- if('Notification'in window&&Notification.permission==='granted'){try{new Notification('Checkit ⏰',{body});}catch{}}
+ const body=`Linie ${alarm.line} nach ${alarm.destination} fährt in ${alarm.minutesBefore} Minuten ab · ${alarm.stopName}`;
  $('status').textContent='⏰ '+body;
+ if(!await showAlarmNotification(body))$('status').textContent='⏰ Erinnerung im Board: '+body+' · Systembenachrichtigung nicht verfügbar.';
 }
 let popoverDep=null;
 function openAlarmPopover(dep,anchor){
@@ -71,7 +88,6 @@ $('alarm-popover').querySelectorAll('button').forEach(b=>b.addEventListener('cli
  $('alarm-popover').classList.add('hidden');
  const dep=popoverDep;if(!dep)return;
  if('Notification'in window&&Notification.permission==='default'){try{await Notification.requestPermission();}catch{}}
- if('Notification'in window&&Notification.permission==='denied'){$('status').textContent='Bitte Benachrichtigungen für diese Seite erlauben, sonst bleibt die Erinnerung stumm.';}
  scheduleAlarm(dep,Number(b.dataset.minutes));
 }));
 $('departures').addEventListener('click',e=>{

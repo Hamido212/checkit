@@ -14,7 +14,7 @@ export async function handleApi(request, response) {
   };
   if (request.method !== 'GET') return send(405, { error: 'Nur GET wird unterstützt.' });
   try {
-    if (url.pathname === '/api/health') return send(200, { ok: true, provider: 'transitous', version: '0.2.0' });
+    if (url.pathname === '/api/health') return send(200, { ok: true, provider: 'transitous', version: '0.3.0' });
     if (['/api/search', '/api/stops/search'].includes(url.pathname)) {
       const q = url.searchParams.get('q')?.trim();
       if (!q || q.length > 120) return send(400, { error: 'Bitte einen Suchbegriff mit 1–120 Zeichen angeben.' });

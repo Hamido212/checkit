@@ -1,8 +1,11 @@
-# Unreleased — Favoriten & Abfahrts-Erinnerungen
+# Checkit 0.3.0 — Favoriten & Abfahrts-Erinnerungen
 
 - **Favoriten:** Mehrere Haltestellen lokal speichern, per Tipp wechseln und einzeln entfernen. Web (Board), Android-App und Windows-Desktop teilen dasselbe Konzept; alles bleibt lokal auf dem Gerät, kein Account nötig. Die bisherige Auswahl wird beim ersten Start automatisch als Favorit übernommen.
-- **Abfahrts-Erinnerung:** Pro Abfahrt eine Erinnerung 5, 10 oder 15 Minuten vorher. Web nutzt die Browser-Benachrichtigung (Board muss geöffnet sein), Android plant exakte Alarme per AlarmManager (funktioniert auch im Standby, mit Hinweis bei Ausfall), Windows zeigt ein Popup mit Ton. Aktive Erinnerungen lassen sich in allen Clients einsehen und löschen; ausgelöste Erinnerungen werden automatisch aufgeräumt.
+- **Abfahrts-Erinnerung:** Pro Abfahrt eine Erinnerung 5, 10 oder 15 Minuten vorher. Web nutzt bei erteilter Berechtigung die Service-Worker-Benachrichtigung, auch auf unterstützten mobilen Browsern (Board muss geöffnet sein). Android plant Alarme per AlarmManager (mit Berechtigung exakt, auch im Standby), Windows zeigt bei laufender App ein Popup mit Ton. Aktive Erinnerungen lassen sich einsehen und löschen.
 - Android: neue Berechtigung `SCHEDULE_EXACT_ALARM` für exakte Erinnerungen.
+- Gelöschte letzte Favoriten bleiben nach einem Neustart auf Android und Windows gelöscht.
+- Android stellt noch bevorstehende Alarme nach einem Neustart oder App-Update wieder her. Abfahrten bleiben wie auf Web und Windows bis zu einer Minute nach der angegebenen Zeit als „jetzt“ sichtbar.
+- Wenn der Browser keine Systembenachrichtigung anzeigen kann, weist das Board sichtbar darauf hin. Ein geschlossener Tab kann ohne Push-Dienst keine Web-Erinnerung auslösen.
 
 # Checkit 0.2.2 — Windows-Startkorrektur
 

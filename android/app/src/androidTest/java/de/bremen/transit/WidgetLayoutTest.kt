@@ -127,6 +127,16 @@ class WidgetLayoutTest {
                 runBlocking { de.bremen.transit.widget.WidgetUpdates.render(context) }
                 Thread.sleep(2500)
                 instrumentation.runOnMainSync { views.forEach { view ->
+                    val labels = collect(view).map { it.text.toString() }
+                    assertTrue("Departure should remain visible as jetzt", "ExpiresSoon" in labels)
+                    assertTrue("Current departure should say jetzt", "jetzt" in labels)
+                } }
+                val expired = java.time.Instant.now().minusSeconds(65).toString()
+                departures.getJSONObject(0).put("scheduled", expired).put("realtime", expired)
+                prefs.edit().putString("latest-snapshot", fixture.toString()).commit()
+                runBlocking { de.bremen.transit.widget.WidgetUpdates.render(context) }
+                Thread.sleep(2500)
+                instrumentation.runOnMainSync { views.forEach { view ->
                     assertFalse("Expired departure remains", collect(view).any { it.text.toString() == "ExpiresSoon" })
                     assertTrue("Next departure missing", collect(view).any { it.text.toString() == "NextDeparture" })
                     assertTrue("Old native countdown remains", collect(view).none { it is android.widget.Chronometer })

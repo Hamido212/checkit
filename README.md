@@ -8,7 +8,7 @@
 
 - Bremen Hauptbahnhof als Standard, Haltestellensuche und gespeicherte Auswahl.
 - Favoriten: mehrere Haltestellen lokal speichern und per Tipp wechseln – in Web-App, Android und Windows.
-- Abfahrts-Erinnerung: pro Abfahrt 5, 10 oder 15 Minuten vorher Bescheid bekommen (Web: Browser-Benachrichtigung, Android: exakter Alarm, Windows: Popup mit Ton).
+- Abfahrts-Erinnerung: pro Abfahrt 5, 10 oder 15 Minuten vorher Bescheid bekommen (Web: Benachrichtigung bei geöffnetem Board und erteilter Berechtigung, Android: Alarm mit Berechtigung für exakte Zeitpunkte, Windows: Popup mit Ton bei laufender App).
 - Bus, Straßenbahn und Regionalverkehr über Transitous/MOTIS; Verspätungen, Ausfälle und Kennzeichnung von Echtzeit gegenüber Fahrplan.
 - Responsive Website mit Live-Vorschau und eigenem Abfahrtsboard; installierbare Web-App mit lokalem Offline-Stand.
 - Native Android-App mit Glance-Homescreen-Widget, echten Spalten, anpassbarer Zeilenanzahl, manueller Aktualisierung, WorkManager und lokalem Cache.
@@ -26,6 +26,8 @@ Windows ist ein eigenständiges Desktop-Fenster, keine Erweiterung des Windows-1
 ## Aktualisierung
 
 Web und Windows: 60 Sekunden. API-Cache: 45 Sekunden. Android: Live-Modus mit dauerhafter Benachrichtigung lädt bei eingeschaltetem Bildschirm jede Minute neue Daten; Widget-Minuten und abgelaufene Abfahrten werden alle zehn Sekunden aktualisiert. Alle Widgets teilen denselben Datenstand. Ohne Live-Modus bleibt der ungefähre 15-Minuten-Hintergrundrhythmus von Android. Hersteller-Energiesparfunktionen können den Dienst stoppen (bei Xiaomi gegebenenfalls Autostart und Akku → Keine Beschränkungen erlauben). Restzeiten werden nie negativ. Ergänzende Uhrzeiten sind Europe/Berlin. Datenstand und veraltete Daten werden sichtbar gekennzeichnet. Keine Garantie der Echtzeitabdeckung oder Abfahrtsdaten.
+
+Android zeigt eine Abfahrt wie Web und Windows noch bis zu einer Minute nach der angegebenen Zeit als „jetzt“. Gespeicherte Android-Erinnerungen werden nach einem Neustart oder App-Update erneut eingerichtet, sofern ihr Zeitpunkt noch bevorsteht. Web-Erinnerungen benötigen weiterhin ein geöffnetes Board; geschlossene Tabs können ohne Push-Dienst keine künftigen Benachrichtigungen auslösen. Wenn Browser-Benachrichtigungen nicht verfügbar sind, zeigt das Board einen Hinweis.
 
 ## Lokal starten
 

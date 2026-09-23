@@ -36,8 +36,47 @@ class LiveUpdateTest {
         assertEquals("1 min", TransitDisplay.remaining("2026-09-18T10:00:01Z", now))
         assertEquals("2 min", TransitDisplay.remaining("2026-09-18T10:01:01Z", now))
         val departure = Departure("test", "6", "Flughafen", null, "2026-09-18T10:00:00Z", null, 0, false, false)
-        assertFalse(TransitDisplay.upcoming(departure, now))
+        assertTrue(TransitDisplay.upcoming(departure, now))
+        assertTrue(TransitDisplay.upcoming(departure, now + 59_999))
+        assertFalse(TransitDisplay.upcoming(departure, now + 60_000))
         assertTrue(TransitDisplay.upcoming(departure, now - 1))
+    }
+
+    @Test fun deletingLastFavoriteSurvivesRepositoryReload() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val preferences = context.getSharedPreferences("departure-cache", android.content.Context.MODE_PRIVATE)
+        val previous = preferences.getString("favorite-stops", null)
+        try {
+            preferences.edit().remove("favorite-stops").commit()
+            val repository = TransitDisplay.repository(context)
+            val initial = repository.getFavorites().single()
+            repository.removeFavorite(initial.id)
+            assertTrue(TransitDisplay.repository(context).getFavorites().isEmpty())
+        } finally {
+            val edit = preferences.edit()
+            if (previous == null) edit.remove("favorite-stops") else edit.putString("favorite-stops", previous)
+            edit.commit()
+        }
+    }
+
+    @Test fun savedAlarmIsRestoredAfterBootBroadcast() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val preferences = context.getSharedPreferences("departure-alarms", android.content.Context.MODE_PRIVATE)
+        val previous = preferences.getString("alarms", null)
+        val departure = Departure("boot-test", "6", "Flughafen", null,
+            Instant.ofEpochMilli(System.currentTimeMillis() + 7 * 60_000).toString(), null, 0, false, false)
+        try {
+            preferences.edit().remove("alarms").commit()
+            assertTrue(DepartureAlarm.schedule(context, departure, Stop("boot-stop", "Test"), 5))
+            AlarmRestoreReceiver().onReceive(context, Intent(Intent.ACTION_BOOT_COMPLETED))
+            assertTrue(DepartureAlarm.isSet(context, departure.id))
+            assertEquals(1, DepartureAlarm.restore(context))
+        } finally {
+            DepartureAlarm.cancel(context, departure.id)
+            val edit = preferences.edit()
+            if (previous == null) edit.remove("alarms") else edit.putString("alarms", previous)
+            edit.commit()
+        }
     }
 
     @Test fun liveServiceFetchesAgainWithoutAppOrManualRefresh() {

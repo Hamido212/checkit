@@ -50,7 +50,7 @@ public partial class MainWindow : Window {
         try {
             var preferences = JsonSerializer.Deserialize<Preferences>(File.ReadAllText(Path.Combine(DataDirectory,"settings.json")));
             var saved = preferences?.Favorites?.Where(s=>s is not null&&!string.IsNullOrWhiteSpace(s.id)&&!string.IsNullOrWhiteSpace(s.name)).ToList();
-            if(saved is not null&&saved.Count>0)return saved;
+            if(saved is not null)return saved;
         } catch { }
         return new List<Stop>{ stop };
     }
