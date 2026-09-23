@@ -67,10 +67,10 @@ class WidgetLayoutTest {
                 for(attempt in 0..25) {
                     Thread.sleep(200)
                     instrumentation.runOnMainSync { texts=collect(view) }
-                    if(texts.any { it.text.toString().matches(Regex("[0-9]+ min")) }) break
+                    if(texts.any { it.text.toString().matches(Regex("([0-9]+ min|jetzt)")) }) break
                 }
                 instrumentation.runOnMainSync {
-                    val times=texts.filter { it.text.toString().matches(Regex("[0-9]+ min")) }
+                    val times=texts.filter { it.text.toString().matches(Regex("([0-9]+ min|jetzt)")) }
                     assertTrue("No times at ${width}x${height}: ${texts.map{it.text}}", times.isNotEmpty())
                     assertTrue("Status missing", texts.any { it.text.contains("Stand") })
                     val location=IntArray(2);view.getLocationOnScreen(location)

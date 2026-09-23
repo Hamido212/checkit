@@ -12,6 +12,10 @@ test('invalid departures removed; upcoming sorted by actual time',()=>{
  const result=normalizeDepartures({stopTimes:[{place:{}},{place:{departure:'2026-09-17T12:00:00Z'}},{place:{departure:'2026-09-17T11:00:00Z'}}]}, {id:'stop',name:'Stop'});
  assert.equal(result.departures.length,2);assert.equal(result.departures[0].time.realtime,'2026-09-17T11:00:00Z');
 });
+test('station time zone follows the departure stop',()=>{
+ const result=normalizeDepartures({stopTimes:[{place:{tz:'America/New_York',departure:'2026-09-23T21:00:00Z'}}]}, {id:'us-test',name:'Penn Station'});
+ assert.equal(result.station.timeZone,'America/New_York');
+});
 test('provider caches requests and does not fabricate data when upstream fails',async()=>{
  let calls=0;const provider=new TransitousProvider({userAgent:'test',cache:new MemoryCache(),fetchImpl:async()=>{calls++;return {ok:true,json:async()=>({stopTimes:[]})}}});
  await provider.getDepartures('bremen');await provider.getDepartures('bremen');assert.equal(calls,1);

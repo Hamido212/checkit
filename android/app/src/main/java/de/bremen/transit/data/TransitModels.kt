@@ -2,7 +2,8 @@ package de.bremen.transit.data
 
 data class Stop(
     val id: String,
-    val name: String
+    val name: String,
+    val timeZone: String? = null
 )
 
 data class Departure(

@@ -14,3 +14,4 @@
 .favorite-item.active .favorite-name{outline:1px solid var(--amber)}
 .favorite-remove{background:#232a2b;color:var(--muted);border:0;border-radius:3px;padding:0 12px}
 .favorite-remove:hover{color:#fb786d}
+#clock-zone{display:block;font:8px 'Courier New',monospace;color:#737d7e;margin-top:4px;max-width:160px;white-space:normal}

@@ -22,15 +22,17 @@ object DepartureAlarm {
         val stopId: String,
         val stopName: String,
         val fireAt: Long,
-        val minutesBefore: Int
+        val minutesBefore: Int,
+        val timeZone: String? = null
     )
 
     const val ACTION = "de.bremen.transit.ALARM_FIRED"
     private const val PREFS = "departure-alarms"
     private const val KEY = "alarms"
-    private val timeFormat = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.of("Europe/Berlin"))
-
-    fun fireTimeLabel(fireAt: Long): String = timeFormat.format(Instant.ofEpochMilli(fireAt))
+    fun fireTimeLabel(fireAt: Long, timeZone: String? = null): String {
+        val zone = runCatching { ZoneId.of(timeZone ?: ZoneId.systemDefault().id) }.getOrDefault(ZoneId.systemDefault())
+        return DateTimeFormatter.ofPattern("HH:mm").withZone(zone).format(Instant.ofEpochMilli(fireAt))
+    }
 
     fun getAlarms(context: Context): List<Alarm> {
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null)
@@ -47,7 +49,8 @@ object DepartureAlarm {
                             stopId = item.getString("stopId"),
                             stopName = item.getString("stopName"),
                             fireAt = item.getLong("fireAt"),
-                            minutesBefore = item.getInt("minutesBefore")
+                            minutesBefore = item.getInt("minutesBefore"),
+                            timeZone = item.optString("timeZone").takeUnless { it.isBlank() || it == "null" }
                         )
                     )
                 }
@@ -65,7 +68,7 @@ object DepartureAlarm {
         val fireAt = departureAt - minutesBefore * 60_000L
         if (fireAt <= System.currentTimeMillis() + 20_000) return false
         cancel(context, departure.id)
-        val alarm = Alarm(departure.id, departure.line, departure.destination, stop.id, stop.name, fireAt, minutesBefore)
+        val alarm = Alarm(departure.id, departure.line, departure.destination, stop.id, stop.name, fireAt, minutesBefore, stop.timeZone)
         if (!scheduleSystemAlarm(context, alarm)) return false
         save(context, getAlarms(context) + alarm)
         return true
@@ -141,6 +144,7 @@ object DepartureAlarm {
                     .put("stopName", alarm.stopName)
                     .put("fireAt", alarm.fireAt)
                     .put("minutesBefore", alarm.minutesBefore)
+                    .put("timeZone", alarm.timeZone)
             )
         }
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, array.toString()).apply()

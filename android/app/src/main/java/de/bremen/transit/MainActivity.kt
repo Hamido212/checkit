@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
             message = "Bitte exakte Erinnerungen erlauben und erneut tippen."
             return
         }
-        if (DepartureAlarm.schedule(activity, departure, stop, minutes)) {
+        if (DepartureAlarm.schedule(activity, departure, snapshot?.station ?: stop, minutes)) {
             alarms = DepartureAlarm.getAlarms(activity)
             message = "⏰ Erinnerung aktiv: Linie ${departure.line} in $minutes Minuten."
         } else message = "Dafür ist es zu spät – die Abfahrt steht kurz bevor."
@@ -119,6 +119,7 @@ class MainActivity : ComponentActivity() {
                 TextButton(onClick = { refresh() }, enabled = !busy, contentPadding = PaddingValues(0.dp), modifier = Modifier.width(35.dp).height(28.dp)) { Text("↻", fontSize = 21.sp) }
             }
             Text(TransitDisplay.status(snapshot), fontSize = 10.sp, color = Color(0xFFA8ADB5))
+            Text(if (snapshot?.station?.timeZone != null) "Uhrzeiten: Ortszeit der Haltestelle" else "Uhrzeiten: Gerätezeit", fontSize = 10.sp, color = Color(0xFFA8ADB5))
             val departures = snapshot?.departures?.filter { TransitDisplay.upcoming(it) }.orEmpty()
             if(departures.isEmpty()) Text("Keine aktuellen Abfahrten. Bitte aktualisieren.", fontSize = 13.sp, modifier = Modifier.padding(vertical = 20.dp))
             departures.take(4).forEach { d ->
@@ -132,7 +133,7 @@ class MainActivity : ComponentActivity() {
                     }
                     Column(Modifier.width(58.dp)) {
                         Text(if(d.cancelled) "AUS" else TransitDisplay.remaining(d.realtime ?: d.scheduled, now), Modifier.fillMaxWidth(), color = Color(0xFFFFB51B), fontSize = 14.sp, textAlign = TextAlign.End)
-                        Text(TransitDisplay.time(d.realtime ?: d.scheduled), Modifier.fillMaxWidth(), color = Color(0xFFA8ADB5), fontSize = 9.sp, textAlign = TextAlign.End)
+                        Text(TransitDisplay.time(d.realtime ?: d.scheduled, snapshot?.station?.timeZone), Modifier.fillMaxWidth(), color = Color(0xFFA8ADB5), fontSize = 9.sp, textAlign = TextAlign.End)
                     }
                     val alarmActive = alarms.any { it.departureId == d.id }
                     TextButton(onClick = {
@@ -179,7 +180,7 @@ class MainActivity : ComponentActivity() {
             Text("Aktive Erinnerungen", fontSize = 19.sp)
             alarms.forEach { alarm ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("⏰ Linie ${alarm.line} nach ${alarm.destination} · ${DepartureAlarm.fireTimeLabel(alarm.fireAt)} Uhr",
+                    Text("⏰ Linie ${alarm.line} nach ${alarm.destination} · ${DepartureAlarm.fireTimeLabel(alarm.fireAt, alarm.timeZone)} Uhr",
                         Modifier.weight(1f), fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     TextButton(onClick = { DepartureAlarm.cancel(activity, alarm.departureId); alarms = DepartureAlarm.getAlarms(activity) },
                         contentPadding = PaddingValues(0.dp), modifier = Modifier.width(40.dp)) { Text("✕", color = Color(0xFFA8ADB5)) }

@@ -1,3 +1,9 @@
+# Checkit 0.3.1 — Weitere Städte & Ortszeit
+
+- Checkit entstand in Bremen, kann über Transitous/MOTIS aber Haltestellen und Abfahrten in vielen anderen Ländern finden. Die Website zeigt dies jetzt sichtbar und nennt geprüfte Beispiele: Berlin, Wien, Zürich, Paris, London und New York. Abdeckung und Echtzeitdaten hängen vom lokalen Verkehrsnetz ab.
+- Web-Board, Android-App und Windows-Fenster zeigen absolute Uhrzeiten in der Ortszeit der gewählten Haltestelle. Der Countdown in Minuten bleibt unabhängig von der Zeitzone. Wenn die Datenquelle keine Haltestellen-Zeitzone liefert, wird die Gerätezeit verwendet.
+- Android-Erinnerungen und Windows-Erinnerungslisten behalten die Zeitzone der Haltestelle auch dann, wenn später eine andere Haltestelle ausgewählt wird.
+
 # Checkit 0.3.0 — Favoriten & Abfahrts-Erinnerungen
 
 - **Favoriten:** Mehrere Haltestellen lokal speichern, per Tipp wechseln und einzeln entfernen. Web (Board), Android-App und Windows-Desktop teilen dasselbe Konzept; alles bleibt lokal auf dem Gerät, kein Account nötig. Die bisherige Auswahl wird beim ersten Start automatisch als Favorit übernommen.

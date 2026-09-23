@@ -1,12 +1,12 @@
 # Checkit
 
-**Deine Haltestelle. Bei dir.** Kostenlose, nichtkommerzielle Abfahrtsanzeige für Bremen.
+**Deine Haltestelle. Bei dir.** Kostenlose, nichtkommerzielle Abfahrtsanzeige, in Bremen entstanden und über Bremen hinaus nutzbar.
 
 [Website & Downloads](https://checkit-omega-two.vercel.app) · [Live-Board](https://checkit-omega-two.vercel.app/board.html) · [Releases](https://github.com/Hamido212/checkit/releases)
 
 ## Was funktioniert
 
-- Bremen Hauptbahnhof als Standard, Haltestellensuche und gespeicherte Auswahl.
+- Bremen Hauptbahnhof als Standard; Haltestellensuche und Abfahrten über Transitous/MOTIS auch in vielen anderen Ländern. Beispiele in Berlin, Wien, Zürich, Paris, London und New York wurden geprüft. Die Abdeckung variiert je nach Region und Anbieter.
 - Favoriten: mehrere Haltestellen lokal speichern und per Tipp wechseln – in Web-App, Android und Windows.
 - Abfahrts-Erinnerung: pro Abfahrt 5, 10 oder 15 Minuten vorher Bescheid bekommen (Web: Benachrichtigung bei geöffnetem Board und erteilter Berechtigung, Android: Alarm mit Berechtigung für exakte Zeitpunkte, Windows: Popup mit Ton bei laufender App).
 - Bus, Straßenbahn und Regionalverkehr über Transitous/MOTIS; Verspätungen, Ausfälle und Kennzeichnung von Echtzeit gegenüber Fahrplan.
@@ -21,11 +21,11 @@ Windows ist ein eigenständiges Desktop-Fenster, keine Erweiterung des Windows-1
 
 **Android:** `checkit-android.apk` aus den Releases installieren, Checkit öffnen, Haltestelle auswählen und „Widget hinzufügen“ tippen. Alternativ über das Widgets-Menü des Launchers. Alle Widgets verwenden dieselbe Haltestelle. Ein vorhandener alter Debug-Build hat einen anderen Signaturschlüssel und muss vor dem Wechsel zur Release-APK deinstalliert werden (lokale Auswahl geht dabei verloren).
 
-**Windows:** `Checkit.exe` herunterladen und direkt starten. Keine Installation notwendig. Alternativ die portable ZIP entpacken. Keine zusätzliche .NET-Installation nötig. Über die Kopfzeile verschieben, unten rechts skalieren; ◇ schaltet „Immer im Vordergrund“ um. Die EXE ist nicht mit einem kommerziellen Windows-Code-Signing-Zertifikat signiert.
+**Windows:** `Checkit.exe` herunterladen und direkt starten. Keine Installation und keine zusätzliche .NET-Installation nötig. Über die Kopfzeile verschieben, unten rechts skalieren; ◇ schaltet „Immer im Vordergrund“ um. Die EXE ist nicht mit einem kommerziellen Windows-Code-Signing-Zertifikat signiert.
 
 ## Aktualisierung
 
-Web und Windows: 60 Sekunden. API-Cache: 45 Sekunden. Android: Live-Modus mit dauerhafter Benachrichtigung lädt bei eingeschaltetem Bildschirm jede Minute neue Daten; Widget-Minuten und abgelaufene Abfahrten werden alle zehn Sekunden aktualisiert. Alle Widgets teilen denselben Datenstand. Ohne Live-Modus bleibt der ungefähre 15-Minuten-Hintergrundrhythmus von Android. Hersteller-Energiesparfunktionen können den Dienst stoppen (bei Xiaomi gegebenenfalls Autostart und Akku → Keine Beschränkungen erlauben). Restzeiten werden nie negativ. Ergänzende Uhrzeiten sind Europe/Berlin. Datenstand und veraltete Daten werden sichtbar gekennzeichnet. Keine Garantie der Echtzeitabdeckung oder Abfahrtsdaten.
+Web und Windows: 60 Sekunden. API-Cache: 45 Sekunden. Android: Live-Modus mit dauerhafter Benachrichtigung lädt bei eingeschaltetem Bildschirm jede Minute neue Daten; Widget-Minuten und abgelaufene Abfahrten werden alle zehn Sekunden aktualisiert. Alle Widgets teilen denselben Datenstand. Ohne Live-Modus bleibt der ungefähre 15-Minuten-Hintergrundrhythmus von Android. Hersteller-Energiesparfunktionen können den Dienst stoppen (bei Xiaomi gegebenenfalls Autostart und Akku → Keine Beschränkungen erlauben). Restzeiten werden nie negativ. Uhrzeiten erscheinen in der Ortszeit der ausgewählten Haltestelle; Minuten-Countdowns sind zeitzonenunabhängig. Datenstand und veraltete Daten werden sichtbar gekennzeichnet. Keine Garantie der Echtzeitabdeckung oder Abfahrtsdaten.
 
 Android zeigt eine Abfahrt wie Web und Windows noch bis zu einer Minute nach der angegebenen Zeit als „jetzt“. Gespeicherte Android-Erinnerungen werden nach einem Neustart oder App-Update erneut eingerichtet, sofern ihr Zeitpunkt noch bevorsteht. Web-Erinnerungen benötigen weiterhin ein geöffnetes Board; geschlossene Tabs können ohne Push-Dienst keine künftigen Benachrichtigungen auslösen. Wenn Browser-Benachrichtigungen nicht verfügbar sind, zeigt das Board einen Hinweis.
 

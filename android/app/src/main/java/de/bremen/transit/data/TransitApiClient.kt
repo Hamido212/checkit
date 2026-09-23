@@ -43,7 +43,8 @@ class TransitApiClient(
         val stationJson = root.optJSONObject("station")
         val station = Stop(
             id = stationJson?.optString("id").orEmpty().ifBlank { fallbackStop.id },
-            name = stationJson?.optString("name").orEmpty().ifBlank { fallbackStop.name }
+            name = stationJson?.optString("name").orEmpty().ifBlank { fallbackStop.name },
+            timeZone = stationJson?.optString("timeZone")?.takeUnless { it.isBlank() || it == "null" }
         )
         val items = root.optJSONArray("departures")
         val departures = buildList {

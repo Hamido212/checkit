@@ -64,3 +64,11 @@ test('web alarm reports a failed system notification in the board', async () => 
   await vm.runInContext('fireAlarm("departure-1")', sandbox);
   assert.match(elements.get('status').textContent, /Systembenachrichtigung nicht verfügbar/);
 });
+
+test('board departure clock uses the selected station time zone', () => {
+  const { sandbox } = boardWithAlarm(undefined);
+  vm.runInContext('latestData={station:{timeZone:"America/New_York"}}', sandbox);
+  assert.equal(vm.runInContext('formatTime("2026-09-23T21:00:00Z")', sandbox), '17:00');
+  vm.runInContext('latestData={station:{timeZone:"Europe/Berlin"}}', sandbox);
+  assert.equal(vm.runInContext('formatTime("2026-09-23T21:00:00Z")', sandbox), '23:00');
+});

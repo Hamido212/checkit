@@ -101,7 +101,7 @@ class DepartureRepository(
         return JSONObject()
             .put(
                 "station",
-                JSONObject().put("id", snapshot.station.id).put("name", snapshot.station.name)
+                JSONObject().put("id", snapshot.station.id).put("name", snapshot.station.name).put("timeZone", snapshot.station.timeZone)
             )
             .put("generatedAt", snapshot.generatedAt)
             .put("stale", snapshot.stale)
@@ -132,7 +132,7 @@ class DepartureRepository(
             }
         }
         return DepartureSnapshot(
-            station = Stop(stationJson.getString("id"), stationJson.getString("name")),
+            station = Stop(stationJson.getString("id"), stationJson.getString("name"), stationJson.optString("timeZone").takeUnless { it.isBlank() || it == "null" }),
             generatedAt = root.optString("generatedAt"),
             departures = departures,
             stale = root.optBoolean("stale", false)

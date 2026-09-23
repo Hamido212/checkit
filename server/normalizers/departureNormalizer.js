@@ -41,8 +41,9 @@ export function normalizeDeparture(item) {
 }
 
 export function normalizeDepartures(raw, station) {
+  const timeZone = raw.stopTimes.find(item => item.place?.tz)?.place.tz || station.timeZone || null;
   return {
-    station,
+    station: { ...station, timeZone },
     generatedAt: new Date().toISOString(),
     source: "transitous",
     departures: raw.stopTimes.map(normalizeDeparture).filter(d => Number.isFinite(Date.parse(d.time.realtime || d.time.scheduled))).sort((a,b) => Date.parse(a.time.realtime || a.time.scheduled) - Date.parse(b.time.realtime || b.time.scheduled))

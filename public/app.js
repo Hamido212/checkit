@@ -6,7 +6,9 @@ const save=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}cat
 let selectedStop=read('selected-stop',DEFAULT_STOP);
 if(!selectedStop?.id||!selectedStop?.name)selectedStop=DEFAULT_STOP;
 let latestData=null,stale=false,inFlight=null,searchRequest=null,nextRefreshAt=Date.now();
-const formatTime=v=>new Intl.DateTimeFormat('de-DE',{timeZone:'Europe/Berlin',hour:'2-digit',minute:'2-digit'}).format(new Date(v));
+const stationTimeZone=()=>latestData?.station?.timeZone||Intl.DateTimeFormat().resolvedOptions().timeZone;
+const formatTime=v=>{try{return new Intl.DateTimeFormat('de-DE',{timeZone:stationTimeZone(),hour:'2-digit',minute:'2-digit'}).format(new Date(v))}catch{return new Intl.DateTimeFormat('de-DE',{hour:'2-digit',minute:'2-digit'}).format(new Date(v))}};
+const formatDate=v=>{try{return new Intl.DateTimeFormat('de-DE',{timeZone:stationTimeZone(),weekday:'short',day:'2-digit',month:'short'}).format(v)}catch{return new Intl.DateTimeFormat('de-DE',{weekday:'short',day:'2-digit',month:'short'}).format(v)}};
 
 /* ---------- Favoriten ---------- */
 let favorites=read('checkit-favorites',null);
@@ -101,6 +103,10 @@ $('departures').addEventListener('click',e=>{
 function render(){
  if(!latestData)return;
  $('station-name').textContent=selectedStop.name;
+ $('clock-zone').textContent=latestData.station.timeZone?'Ortszeit der Haltestelle':'Gerätezeit';
+ $('clock-zone').title=latestData.station.timeZone||'';
+ $('clock').textContent=formatTime(new Date());
+ $('date').textContent=formatDate(new Date());
  $('updated-label').textContent=`Datenstand ${formatTime(latestData.generatedAt)}`;
  const aged=Date.now()-Date.parse(latestData.generatedAt)>120000;
  $('source-label').textContent=stale||aged?'VERALTET':latestData.departures.some(d=>d.realtime)?'ECHTZEIT':'FAHRPLAN';
@@ -153,5 +159,5 @@ alarms.forEach(armAlarmTimer);
 renderFavorites();
 refresh();setInterval(()=>{if(!document.hidden&&!inFlight)refresh()},60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
-setInterval(()=>{const now=new Date();$('clock').textContent=formatTime(now);$('date').textContent=now.toLocaleDateString('de-DE',{timeZone:'Europe/Berlin',weekday:'short',day:'2-digit',month:'short'});$('next-refresh').textContent=`Aktualisierung in ${Math.max(0,Math.ceil((nextRefreshAt-Date.now())/1000))} s`;render()},1000);
+setInterval(()=>{const now=new Date();$('clock').textContent=formatTime(now);$('date').textContent=formatDate(now);$('next-refresh').textContent=`Aktualisierung in ${Math.max(0,Math.ceil((nextRefreshAt-Date.now())/1000))} s`;render()},1000);
 if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});

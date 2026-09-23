@@ -32,6 +32,8 @@ class LiveUpdateTest {
 
     @Test fun countdownNeverNegativeAndExpiredDeparturesDisappear() {
         val now = Instant.parse("2026-09-18T10:00:00Z").toEpochMilli()
+        assertEquals("17:00", TransitDisplay.time("2026-09-23T21:00:00Z", "America/New_York"))
+        assertEquals("23:00", TransitDisplay.time("2026-09-23T21:00:00Z", "Europe/Berlin"))
         assertEquals("jetzt", TransitDisplay.remaining("2026-09-18T09:59:13Z", now))
         assertEquals("1 min", TransitDisplay.remaining("2026-09-18T10:00:01Z", now))
         assertEquals("2 min", TransitDisplay.remaining("2026-09-18T10:01:01Z", now))
@@ -67,9 +69,10 @@ class LiveUpdateTest {
             Instant.ofEpochMilli(System.currentTimeMillis() + 7 * 60_000).toString(), null, 0, false, false)
         try {
             preferences.edit().remove("alarms").commit()
-            assertTrue(DepartureAlarm.schedule(context, departure, Stop("boot-stop", "Test"), 5))
+            assertTrue(DepartureAlarm.schedule(context, departure, Stop("boot-stop", "Test", "America/New_York"), 5))
             AlarmRestoreReceiver().onReceive(context, Intent(Intent.ACTION_BOOT_COMPLETED))
             assertTrue(DepartureAlarm.isSet(context, departure.id))
+            assertEquals("America/New_York", DepartureAlarm.getAlarms(context).single().timeZone)
             assertEquals(1, DepartureAlarm.restore(context))
         } finally {
             DepartureAlarm.cancel(context, departure.id)
